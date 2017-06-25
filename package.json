@@ -1,0 +1,30 @@
+{
+  "name": "wba2_TTM_projekt",
+  "version": "0.0.1",
+  "description": "WBA2 Projekt der TH Koeln",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micha997/WBA2SS17MichelRutschHeuser.git"
+  },
+  "contributors": [
+    {
+      "name": "Michael Michel"
+    },
+    {
+      "name": "Tobias Rutsch"
+    },
+    {
+      "name": "Tristan Heuser"
+    }
+  ],
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/micha997/WBA2SS17MichelRutschHeuser#readme",
+  "bugs": {
+    "url": "https://github.com/micha997/WBA2SS17MichelRutschHeuser/issues"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3"
+  }
+}
