@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 
 var app = express();
 
@@ -6,6 +7,8 @@ const settings = {
     port: 3773
 };
 
+
+app.use(bodyParser.json());
 //Pfad fuer Favroute Funktionen
 app.use('/favroute', require('./ressourcen/favroute'));
 
