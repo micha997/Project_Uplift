@@ -33,7 +33,7 @@ app.use("/favroute",favroute);
 
 //route über Pfad holen
 const route = require('./route');
-app.use("/route",routes);
+app.use("/route",route);
 
 //routetoequipment über Pfad holen
 const routetoequipment = require('./routetoequipment');
