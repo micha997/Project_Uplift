@@ -1,21 +1,18 @@
+//module 
 const express = require('express');
-const bodyParser = require('body-parser');
-
 var app = express();
 
+//Settings festlegen
 const settings = {
-    port: 3773
+	port: 3773
 };
 
-
-app.use(bodyParser.json());
-//Pfad fuer Favroute Funktionen
-app.use('/favroute', require('./ressourcen/favroute'));
-
-//Weitere Funktioenen
+//faveroute über Pfad holen
+const favroutes = require('./favroute');
+app.use("/favroute",favroutes);
 
 
 //Server starten
-app.listen(setting.port, function () {
-   console.log("REST-Sever lÃ¤uft auf Port " + settings.port);
+app.listen(settings.port,function(){
+	console.log("Dr Server läuft auf Port "+ settings.port);
 });
