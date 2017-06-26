@@ -1,10 +1,15 @@
-const express=require('express');
-const app = express.Router();
-const bodyParser=require('body-parser');
+var express = require('express');
+var router = express.Router();
+var bodyParser = require('body-parser');
 
-const ressourceName = "user";
 
-app.post('/', function(req,res){
+//Middleware
+router.use(function timelog (req, res, next){
+	console.log('Time: ', Date.now());
+	next();
+});
+
+router.post('/', function(req,res){
    
     var contentTyp = req.get('Content-Type');
     
@@ -19,4 +24,4 @@ app.post('/', function(req,res){
     }
 });
 
-module.exports = app;
+module.exports = router;
