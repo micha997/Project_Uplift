@@ -9,9 +9,15 @@ const settings = {
 	port: 3773
 };
 
-<<<<<<< HEAD
 app.use(bodyParser.json());
-=======
+
+
+//faveroute ueber Pfad holen
+app.use("/favroute",require('./ressourcen/favroute'));
+
+//
+//Versucht es so ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//
 
 //bewertung ¸ber Pfad holen
 const bewertung = require('./bewertung');
@@ -32,12 +38,9 @@ app.use("/route",routes);
 //routetoequipment ¸ber Pfad holen
 const routetoequipment = require('./routetoequipment');
 app.use("/routetoequipment",routetoequipment);
->>>>>>> d3cc2d9e3ce6768cfcc6c61a04fb584eb4a96052
 
-//faveroute ueber Pfad holen
-app.use("/favroute",require('./ressourcen/favroute'));
 
 //Server starten
 app.listen(settings.port, function () {
-   console.log("REST-Sever l√§uft auf Port " + settings.port);
+   console.log("REST-Sever laeuft auf Port " + settings.port);
 });
