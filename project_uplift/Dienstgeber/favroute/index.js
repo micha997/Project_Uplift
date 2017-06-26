@@ -1,4 +1,4 @@
-//module hinzufügen
+//module hinzufÃ¼gen
 const express=require("express");
 const router=express.Router();
 const bodyParser=('body-parser');
@@ -7,8 +7,8 @@ const ressourceName = "favroute";
 
 // beispiel get funktion
 router.get('/',function(req,res){
-re.send("Alle favroutes")
+res.send("Alle favroutes")
 });
 
-//modul zu app hinzufügen
+//modul zu app hinzufÃ¼gen
 module.exports=router; 
