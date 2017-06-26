@@ -7,7 +7,7 @@ const ressourceName = "route";
 
 // beispiel get funktion
 router.get('/',function(req,res){
-re.send("Alle euipments auf der Route")
+res.send("Alle euipments auf der Route");
 });
 
 //modul zu app hinzufügen

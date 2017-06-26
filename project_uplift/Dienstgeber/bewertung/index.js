@@ -7,7 +7,7 @@ const ressourceName = "bewertung";
 
 // beispiel get funktion
 router.get('/',function(req,res){
-re.send("Alle bewertungen")
+res.send("Alle bewertungen")
 });
 
 //modul zu app hinzufügen

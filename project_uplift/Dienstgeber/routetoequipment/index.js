@@ -7,7 +7,7 @@ const ressourceName = "routetoequipment";
 
 // beispiel get funktion
 router.get('/',function(req,res){
-re.send("Route zum gewählten equipment")
+res.send("Route zum gewählten equipment")
 });
 
 //modul zu app hinzufügen
