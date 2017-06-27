@@ -1,8 +1,10 @@
 //module 
-const express = require("express");
+const express = require('express');
 
 var app = express();
 //var bodyParser = require('body-parser');
+
+global.data = require('./ressourcen/data');
 
 //Settings festlegen
 const settings = {
