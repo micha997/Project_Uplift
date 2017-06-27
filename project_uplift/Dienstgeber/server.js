@@ -13,6 +13,9 @@ const settings = {
 
 //app.use(bodyParser.json());
 
+//favequipment ueber Pfad holen
+const favequipment= require('./ressourcen/favequipment');
+app.use("/favequipment",favequipment);
 
 //faveroute ueber Pfad holen
 const favroute = require('./ressourcen/favroute');
@@ -32,6 +35,11 @@ app.use("/equipment",equipment);
 //faveroute ueber Pfad holen
 //const favroute = require('./favroute');
 //app.use("/favroute",favroute);
+
+
+//favequipment ueber Pfad holen
+//const favequipment= require('./favequipment');
+//app.use("/favequipment",favequipment);
 
 //route ueber Pfad holen
 const route = require('./route');
