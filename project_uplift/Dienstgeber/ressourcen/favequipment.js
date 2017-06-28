@@ -2,11 +2,17 @@
 const express=require("express");
 const router=express.Router();
 const bodyParser=require('body-parser');
-
+const schema = require('js-schema');
 const ressourceName = "favequipment";
 
 //id fuer die erstellten favequipment-listen
 var favequipid = 0;
+
+
+var EquipSchema = schema({
+  id : Number,
+  equipments : Array
+});
 
 //Middleware
 router.use(function timelog (req, res, next){
@@ -47,18 +53,24 @@ router.put('/:id',bodyParser.json(),function(req,res){
       //JSON validieren?!
       var changeFavEquip=req.body;
       //Parameter ueberpruefen
-      if(isNaN(reqID) && reqID >= 0){
-        res.set("Content-Type", 'application/json').status(400).end();
-      }else{
-        for(var i=0;i<data.favequips.length;i++){
-          if(reqID == data.favequips[i].id){
-            //Ersetzen der Equipmentliste mit einer aktuellen
-            changeFavEquip.id = reqID;
-            data.favequips[i] = changeFavEquip;
-            console.log(data.favequips[i]);
-            res.set("Content-Type", 'application/json').status(201).json(data.favequips[i]).end();
-          }
-        }
+			console.log( EquipSchema(changeFavEquip) );
+			if(!EquipSchema(changeFavEquip) ){
+				res.set("Content-Type", 'application/json').status(400).end();
+			}
+			else{
+	      if(isNaN(reqID) && reqID >= 0){
+	        res.set("Content-Type", 'application/json').status(400).end();
+	      }else{
+	        for(var i=0;i<data.favequips.length;i++){
+	          if(reqID == data.favequips[i].id){
+	            //Ersetzen der Equipmentliste mit einer aktuellen
+	            changeFavEquip.id = reqID;
+	            data.favequips[i] = changeFavEquip;
+	            console.log(data.favequips[i]);
+	            res.set("Content-Type", 'application/json').status(201).json(data.favequips[i]).end();
+	          }
+	        }
+				}
       }
     }
 });
@@ -71,12 +83,19 @@ router.post('/',bodyParser.json(),function(req,res){
   }else{
     //Json validieren?!
     var newFavEquip = req.body;
-    //neue Id fuer neuen Eintrag
-    newFavEquip.id = favequipid++;
-    data.favequips.push(newFavEquip);
-    console.log(newFavEquip);
-    res.set("Content-Type", 'application/json').set("Location", "/favequipment/" + (favequipid - 1)).status(201).json(newFavEquip).end();
-  }
+		console.log( EquipSchema(newFavEquip) );
+		if(!EquipSchema(newFavEquip) ){
+			res.set("Content-Type", 'application/json').status(400).end();
+		}
+		else{
+
+	    //neue Id fuer neuen Eintrag
+	    newFavEquip.id = favequipid++;
+	    data.favequips.push(newFavEquip);
+	    console.log(newFavEquip);
+	    res.set("Content-Type", 'application/json').set("Location", "/favequipment/" + (favequipid - 1)).status(201).json(newFavEquip).end();
+	  }
+	}
 });
 
 router.delete('/:id',function(req,res){
