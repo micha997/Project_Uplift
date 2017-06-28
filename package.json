@@ -24,7 +24,9 @@
     "url": "https://github.com/micha997/WBA2SS17MichelRutschHeuser/issues"
   },
   "dependencies": {
+    "async": "^2.5.0",
     "body-parser": "^1.17.2",
+    "curlrequest": "^1.0.1",
     "express": "^4.15.3"
   }
 }
