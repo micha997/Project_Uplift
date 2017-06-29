@@ -29,9 +29,5 @@
     "curlrequest": "^1.0.1",
     "express": "^4.15.3",
     "js-schema": "^1.0.1"
-<<<<<<< HEAD
-=======
- 
->>>>>>> a0785d93b87b71faa5155ba51fa273c02b1bb572
   }
 }
