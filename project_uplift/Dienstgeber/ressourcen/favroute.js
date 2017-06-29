@@ -80,10 +80,8 @@ router.get('/:id', function(req, res){
     if(isNaN(reqID) && reqID >= 0){
         res.set("Content-Type", 'application/json').status(400).end();
     }else{
-        //Daten werden gefiltert, !!schlechte loesung!!  aa = bb = cc ! FILTER ONE ITEM ONLY
-        var reqRouteArr = data.favroutes.filter(function(x){ return x.id == reqID });
-        var reqRoute = reqRouteArr[0];
-        
+        //Eintrag mit der passenden ID wird gesucht
+        var reqRoute = data.favroutes.find(function(x){ return x.id === reqID });
         //Check ob reqRoute leer ist => keine route unter dieser id vorhanden
         if(reqRoute == null){ 
             res.set("Content-Type", 'application/json').status(404).end(); 
@@ -100,17 +98,18 @@ router.get('/:id', function(req, res){
                 var currentOptions = options;
                 currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + reqRoute.stations[n].id);
                 console.log("request an: " + currentOptions.url);
-                //Request wird gestartet und die Optionen werden mituebergeben
-                sendRequest(currentOptions, function(err){
+                //Request wird gestartet, die Optionen und der counter n werden mituebergeben
+                sendRequest(currentOptions, n, function(err){
                     console.log("Erledigt?");
                     done(err);
                 });
             };
             
             //Funktion, die den curl-request versendet
-            function sendRequest(currentOptions, callback){
+            function sendRequest(currentOptions, n, callback){
                 //curl-request an die Deutsche Bahn api mit den passenden Optionen
                 curl.request(currentOptions, function(err, dbDaten){
+                    //AUF ERRORS CHECKEN
                     var dbDaten = JSON.parse(dbDaten);
                     //Variable Station, die dann auf das Array "finalRes" gepusht wird
                     var newStation = {};
@@ -122,18 +121,18 @@ router.get('/:id', function(req, res){
                     
                     //Schleife zum pushen des Equipments auf das newStation.equipment Array
                     for(var j = 0; j < dbDaten.facilities.length; j++) {
-                        
-                        //NUR WENN GLEIS PASST ABFRAGE NOCH HINZUFUEGEN!
-                        
-                        var equip1 ={
-                            "equipmentTyp" : dbDaten.facilities[j].type,
-                            "beschreibung" : dbDaten.facilities[j].description,
-                            "status" : dbDaten.facilities[j].state
+                        //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
+                        if(dbDaten.facilities[j].description.indexOf(reqRoute.stations[n].gleis.toString()) >= 0){
+                            var equip1 ={
+                                "equipmentTyp" : dbDaten.facilities[j].type,
+                                "beschreibung" : dbDaten.facilities[j].description,
+                                "status" : dbDaten.facilities[j].state
+                            }
+                            newStation.equipment.push(equip1);
                         }
-                        newStation.equipment.push(equip1);
                     }
                     finalRes.push(newStation);
-                    console.log("Added " + finalRes);
+                    console.log("Added " + newStation);
                     callback(null);
                 });
             };
