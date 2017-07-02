@@ -7,7 +7,7 @@ global.data = require('./ressourcen/data');
 
 //Settings festlegen
 const settings = {
-	port: 3773
+	port: process.env.PORT || 3773
 };
 
 //modul fuer Bewertungen
