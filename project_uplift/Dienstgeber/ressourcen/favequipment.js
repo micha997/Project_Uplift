@@ -38,7 +38,7 @@ router.use(function timelog (req, res, next){
 });
 //Gibt alle favequipment-Listen aus
 router.get('/',function(req,res){
-    res.set("Content-Type", 'application/json').status(200).json(data.bewertung).end();
+    res.set("Content-Type", 'application/json').status(200).json(data.favequips).end();
 });
 
 //Gibt die favequipt-Liste mit der jeweiligen ID aus
