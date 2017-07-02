@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bodyParser = require('body-parser');
 const curl = require('curlrequest'); //Fuer die request an die Deutsche Bahn
-const async = require('async'); //Fuer async funktionalitaet
+//const async = require('async'); //Fuer async funktionalitaet
 const Ajv = require('ajv'); //Fuer das validieren der json posts
 
 const ressourceName = "favroute";
@@ -107,76 +107,19 @@ router.put('/:id', bodyParser.json(), function(req, res){
 
 //Gibt eine vorhandene Route aus
 router.get('/:id', function(req, res){
+    //Der Parameter des gesuchten Equipment
     var reqID = parseInt(req.params.id);
-    
-    //Pruefen ob der Parameter stimmt
     if(isNaN(reqID) || reqID < 0){
         res.set("Content-Type", 'application/json').status(400).end();
     }else{
-        //Eintrag mit der passenden ID wird gesucht
-        var reqRoute = data.favroutes.find(function(x){ return x.id === reqID });
-        //Check ob reqRoute leer ist => keine route unter dieser id vorhanden
-        if(reqRoute == null){ 
-            res.set("Content-Type", 'application/json').status(404).end(); 
+        //Index der Favroute, dass man sucht wird im Array gesucht
+        var reqFavRoute = data.favroutes.findIndex(function(x){ return x.id === reqID });
+        if(reqFavRoute > -1){
+            //Bei Erfolgreiche gefundenem Index wird die FavRoute ausgegeben
+            res.set("Content-Type", 'application/json').status(200).json(data.favroutes[reqFavRoute]).end();
         }else{
-            
-            //Array mit den Stationen, die als Response am Ende gesendet werden
-            var finalRes = [];
-            //console.log(reqRoute.stations);
-            
-            //Der Wrapper fuer die sendRequest Funktion. Stellt die Optionen fuer die curl-request ein
-            function sendRequestWrapper(n, done){
-                console.log('Calling sendRequest: ', n);
-                //URL anpassen
-                var currentOptions = options;
-                currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + reqRoute.stations[n].id);
-                console.log("request an: " + currentOptions.url);
-                //Request wird gestartet, die Optionen und der counter n werden mituebergeben
-                sendRequest(currentOptions, n, function(err){
-                    console.log("Erledigt?");
-                    done(err);
-                });
-            };
-            
-            //Funktion, die den curl-request versendet
-            function sendRequest(currentOptions, n, callback){
-                //curl-request an die Deutsche Bahn api mit den passenden Optionen
-                curl.request(currentOptions, function(err, dbDaten){
-                    var dbDaten = JSON.parse(dbDaten);
-                    //Variable Station, die dann auf das Array "finalRes" gepusht wird
-                    var newStation = {};
-                    //Name der Station aus den erhaltenen Daten
-                    newStation.name = dbDaten.name;
-                    //Array fuer das jeweilige Equipment an der Station
-                    //Ist das Array am Ende leer gibt es kein Equipment an der Station
-                    newStation.equipment = [];
-                    
-                    //Schleife zum pushen des Equipments auf das newStation.equipment Array
-                    for(var j = 0; j < dbDaten.facilities.length; j++) {
-                        //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
-                        if(dbDaten.facilities[j].description.indexOf(reqRoute.stations[n].gleis.toString()) >= 0){
-                            var equip1 ={
-                                "equipmentTyp" : dbDaten.facilities[j].type,
-                                "beschreibung" : dbDaten.facilities[j].description,
-                                "status" : dbDaten.facilities[j].state
-                            }
-                            newStation.equipment.push(equip1);
-                        }
-                    }
-                    finalRes.push(newStation);
-                    console.log("Added " + newStation);
-                    callback(null);
-                });
-            };
-            
-            //Aufruf der async Funktion timesSeries, zum seriellen Abarbeiten der curl-requests
-            async.timesSeries(reqRoute.stations.length, sendRequestWrapper, function (err, results){
-                //Wenn alle Abfragen bearbeitet wurden und eine Response erstellt wurde
-                console.log("Done!");
-                res.set("Content-Type", 'application/json').status(200).json(finalRes).end();
-            });
-            //console.log(finalRes);
-            //res.set("Content-Type", 'application/json').status(200).json(finalRes).end();
+            //Kein Index gefunden => gesuchte FavRoute nicht vorhanden => not found
+            res.set("Content-Type", 'application/json').status(404).end();
         }
     }
 });
