@@ -1,1 +1,1 @@
-web: node server.js
+web: node ./project_uplift/Dienstgeber/server.js
