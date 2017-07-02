@@ -1,29 +1,35 @@
-[
-  {
-    "id": 0,
-    "equipments":[
-      {
-        "station": 154,
-        "gleis": 5
-      },
-      {
-        "station": 76,
-        "gleis": 4
-      }
-    ]
-  },
-  {
-    "id":1,
-    "equipments":[
-      {
-        "station": 884,
-        "gleis": 7
-      },
-      {
-        "station": 663,
-        "gleis": 12
-      }
+//Struktur fuer die post/put Funktionen
+{
+	"equipments": [
+		{
+			"equipID": 3336
+		}
+	]
+}
 
-    ]
-  }
+//Struktur des internen Arrays, wie die favequip-listen gespeichert werden
+[
+    {
+        "equipments": [
+            {
+                "equipID": 3336
+            },
+            {
+                "equipID": 3221
+            },
+            {
+                "equipID": 3223
+            }
+        ],
+        "id" : 0
+    },
+    {
+        "equipments": [
+            {
+                "equipID": 3336
+            }
+        ],
+        "id" : 1
+        
+    }
 ]

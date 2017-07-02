@@ -29,7 +29,7 @@ var postSchema = {
             "type" : "array",
             "minItems" : 2,
             "items" : {
-                "title" : "station",
+                "title" : "stations",
                 "description" : "favroute post schema",
                 "type" : "object",
                 "properties" : {
@@ -52,6 +52,7 @@ router.use(function timelog (req, res, next){
 	next();
 });
 
+//Postet eine neue route
 router.post('/', bodyParser.json(), function(req,res){
    //Content-Type des Headers pruefen
    var contentType = req.get('Content-Type');
@@ -61,25 +62,23 @@ router.post('/', bodyParser.json(), function(req,res){
         var newFavRoute = req.body;
         //Alle Errors der Validation sammeln, standard ist return nach erstem
         var ajv = Ajv({allErrors: true});
-        var valid = ajv.validate(postSchema, newFavRoute);
-        if (valid) {
-            console.log('User data is valid');
-            //Vergabe der ID an neue FavRoute
+        if (ajv.validate(postSchema, newFavRoute)) {
+            //json Daten stimmen dem schema ueberein
+            //Vergabe der ID an neue FavRoute und pushen auf das Array
             newFavRoute.id = favrouteID++;
             data.favroutes.push(newFavRoute);
             console.log(newFavRoute);
             res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(201).json(newFavRoute).end();
         } else {
-            console.log('User data is INVALID!');
-            console.log(ajv.errors);
             res.set("Content-Type", 'application/json').status(400).end();
         }
    }
 });
 
+//Aendert eine bereits vorhandene Route
 router.put('/:id', bodyParser.json(), function(req, res){
+    //Parameter fuer die favroute, die veraendert werden soll
     var reqID = parseInt(req.params.id);
-    
     var contentType = req.get('Content-Type');
     if(contentType != "application/json"){
          res.set("Accepts", "application/json").status(406).end();
@@ -90,30 +89,28 @@ router.put('/:id', bodyParser.json(), function(req, res){
         if(isNaN(reqID) || reqID < 0 || !ajv.validate(postSchema, changeFavRoute)){ 
             res.set("Content-Type", 'application/json').status(400).end(); 
         }else{
-            //Variable zum pruefen ob es geaendert wurde
-            var changed = false;
-            for(var i=0;i<data.favroutes.length;i++){
-                if(reqID == data.favroutes[i].id){
-                    //Ersetzen der Route mit einer Neuen/Bearbeiteten
-                    changeFavRoute.id = reqID;
-                    data.favroutes[i] = changeFavRoute;
-                    changed = true;
-                    console.log(data.favroutes[i]);
-                    res.set("Content-Type", 'application/json').status(201).json(data.favroutes[i]).end();   
-                }
+            //Index der zu aendernden Route wird gesucht
+            var routeID = data.favroutes.findIndex(function(x){ return x.id === reqID });
+            if(routeID > -1){
+                //Index der Route gefunden, jetzt wird sie geaendert
+                changeFavRoute.id = reqID;
+                data.favroutes[routeID] = changeFavRoute;
+                console.log(data.favroutes[routeID]);
+                res.set("Content-Type", 'application/json').status(201).json(data.favroutes[routeID]).end();
+            }else{
+                //keine Route mit der passenden ID gefunden => not found
+                res.set("Content-Type", 'application/json').status(404).end();
             }
-            if(!changed){ res.set("Content-Type", 'application/json').status(400).end(); }
         }
-        //data.favroutes.push(newFavRoute);
-        //res.set("Content-Type", 'application/json').status(201).json(newFavRoute).end();
     }
 });
 
+//Gibt eine vorhandene Route aus
 router.get('/:id', function(req, res){
     var reqID = parseInt(req.params.id);
     
     //Pruefen ob der Parameter stimmt
-    if(isNaN(reqID) && reqID >= 0){
+    if(isNaN(reqID) || reqID < 0){
         res.set("Content-Type", 'application/json').status(400).end();
     }else{
         //Eintrag mit der passenden ID wird gesucht
@@ -145,7 +142,6 @@ router.get('/:id', function(req, res){
             function sendRequest(currentOptions, n, callback){
                 //curl-request an die Deutsche Bahn api mit den passenden Optionen
                 curl.request(currentOptions, function(err, dbDaten){
-                    //AUF ERRORS CHECKEN
                     var dbDaten = JSON.parse(dbDaten);
                     //Variable Station, die dann auf das Array "finalRes" gepusht wird
                     var newStation = {};
@@ -185,30 +181,27 @@ router.get('/:id', function(req, res){
     }
 });
 
+//Entfernt eine vorhandene Route
 router.delete('/:id', function(req, res){
 	var reqID = parseInt(req.params.id);
     
     //Pruefen ob der Parameter stimmt
-    if(isNaN(reqID) && reqID >= 0){
+    if(isNaN(reqID) || reqID < 0){
         res.set("Content-Type", 'application/json').status(400).end();
     }else{
-        //Schleife, um die FavRoute mit der passenden ID zu finden
-        for(var i=0;i<data.favroutes.length;i++){
-            if(reqID == data.favroutes[i].id){
-                var removedRoute = data.favroutes.splice(i, 1);
-            }
-        }
-        //Wenn nichts zum entfernen gefunden wurde
-        if(removedRoute == null){ 
-            res.set("Content-Type", 'application/json').status(404).end(); 
-        }else{
-            //Erfolgreich ein Objekt entfernt
+        var routeID = data.favroutes.findIndex(function(x){ return x.id === reqID });
+        if(routeID > -1){
+            //Index der Route gefunden, wird jetzt geloescht
+            var removedRoute = data.favroutes.splice(routeID, 1);
             console.log(removedRoute);
             res.set("Content-Type", 'application/json').status(200).end();
+        }else{
+            res.set("Content-Type", 'application/json').status(404).end();
         }        
     }
 });
 
+//Holt alle vorhandenen routen
 router.get('/', function(req, res){
     res.set("Content-Type", 'application/json').status(200).json(data.favroutes).end();
 });

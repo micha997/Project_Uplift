@@ -1,3 +1,6 @@
+//Struktur der POST Anfrage fuer /favroute/
+//Beliebige Menge an stations objekten
+//aber minimal 2
 {
 	"stations": [
 		{
@@ -15,6 +18,19 @@
 		{
 			"id": 2410,
 			"gleis": 4
+		}
+	]
+}
+
+//Struktur der GET Anfrage fuer /route/
+//nur 2 stationen duerfen uebergeben werden
+{
+	"stations": [
+		{
+			"id": 3330
+		},
+		{
+			"id": 2410
 		}
 	]
 }

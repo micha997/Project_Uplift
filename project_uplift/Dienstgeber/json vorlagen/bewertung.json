@@ -1,0 +1,44 @@
+//Struktur der POST Anfrage auf den server
+//(wertung OR comment) OR (wertung AND comment)
+{
+    "wertung" : 5,
+    "comment" : "Lauft ganz gut"
+}
+//wertung > 0 : positiv
+//wertung = 0 : neutral
+//wertung < 0 : negativ
+//require eins von beiden
+//equipmentID wird ueber die URL Parameter uebergeben
+//der Bewertung eine ID verpassen fuer DELETE Anfragen
+
+
+//Struktur des internen Arrays, wie die Datem im server gespeichert werden
+[
+	{
+		"bewertungen": [
+			{
+                "id" : 0,
+                "wertung" : 5,
+                "comment" : "Lauft ganz gut"
+            },
+			{
+                "id" : 1,
+                "wertung" : 2,
+                "comment" : "Is ok"
+            }
+		],
+		"equipID" : 0,
+        "bewertungID" : 2
+	},
+	{
+		"bewertungen": [
+			{
+                "id" : 0,
+                "wertung" : 5,
+                "comment" : "Lauft ganz gut"
+            }
+		],
+		"equipID" : 1,
+        "bewertungID" : 1
+	}
+]
