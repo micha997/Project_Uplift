@@ -23,15 +23,17 @@
   "bugs": {
     "url": "https://github.com/micha997/WBA2SS17MichelRutschHeuser/issues"
   },
-    "dependencies": {
-        "ajv": "^5.2.0",
-        "async": "^2.5.0",
-        "body-parser": "^1.17.2",
-        "curlrequest": "^1.0.1",
-        "express": "^4.15.3"
-    },
-    "scripts" :{
-        "test" : "echo \"Error: no test specified\" && exit 1",
-        "start": "node ./project_uplift/Dienstgeber/server.js"
-    }
+  "dependencies": {
+    "ajv": "^5.2.0",
+    "async": "^2.5.0",
+    "body-parser": "^1.17.2",
+    "curlrequest": "^1.0.1",
+    "express": "^4.15.3",
+    "http": "0.0.0",
+    "request": "^2.81.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./project_uplift/Dienstgeber/server.js"
+  }
 }
