@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const bodyParser = require('body-parser');
 const curl = require('curlrequest'); //Fuer die request an die Deutsche Bahn
-//const async = require('async'); //Fuer async funktionalitaet
+const async = require('async'); //Fuer async funktionalitaet
 const Ajv = require('ajv'); //Fuer das validieren der json posts
 
 const ressourceName = "favroute";
@@ -52,6 +52,11 @@ router.use(function timelog (req, res, next){
 	next();
 });
 
+//Hinweis: Post/Put funktionieren sehr aehnlich und haben fast den selben code
+//Wegen Zeitmangel haben wir keine effizientere Loesung schreiben koennen
+//Der Versuch ein paar Funktionen auszulagern hat schwierigkeiten mit den Parametern gemacht
+//Deswegen folgen leider die etwas gross geratenen post/put funktionen 
+
 //Postet eine neue route
 router.post('/', bodyParser.json(), function(req,res){
    //Content-Type des Headers pruefen
@@ -64,11 +69,53 @@ router.post('/', bodyParser.json(), function(req,res){
         var ajv = Ajv({allErrors: true});
         if (ajv.validate(postSchema, newFavRoute)) {
             //json Daten stimmen dem schema ueberein
-            //Vergabe der ID an neue FavRoute und pushen auf das Array
-            newFavRoute.id = favrouteID++;
-            data.favroutes.push(newFavRoute);
-            console.log(newFavRoute);
-            res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(201).json(newFavRoute).end();
+            
+            //Funktion, die den curl-request versendet
+            function sendRequest(n, callback){
+                console.log('Sende Request: ', n);
+                //URL anpassen
+                var currentOptions = options;
+                currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + newFavRoute.stations[n].id);
+                console.log("request an: " + currentOptions.url);
+                //curl-request an die Deutsche Bahn api mit den passenden Optionen
+                curl.request(currentOptions, function(err, dbDaten){
+                    if(err != null){
+                        callback(true);
+                    }else{
+                        var dbDaten = JSON.parse(dbDaten);
+                        //Name der Station aus den erhaltenen Daten
+                        newFavRoute.stations[n].name = dbDaten.name;
+                        //Array mit dem Equipment fuer die Station mit passendem Gleis
+                        var equipment = []
+                        //Schleife zum pushen des Equipments auf das equipment Array
+                        for(var j = 0; j < dbDaten.facilities.length; j++) {
+                            //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
+                            if(dbDaten.facilities[j].description != null){
+                                if(dbDaten.facilities[j].description.indexOf(newFavRoute.stations[n].gleis.toString()) >= 0){
+                                    equipment.push(dbDaten.facilities[j].equipmentnumber);
+                                }
+                            }
+                        }
+                        newFavRoute.stations[n].equipment = equipment;
+                        callback(null);
+                    }
+                });
+            };
+            
+            //Aufruf der async Funktion timesSeries, zum seriellen Abarbeiten der curl-requests
+            async.timesSeries(newFavRoute.stations.length, sendRequest, function (err, results){
+                //Wenn alle Abfragen bearbeitet wurden und eine Response erstellt wurde
+                console.log("Done!");
+                //err ist true wenn einer aufgetreten ist
+                if(err){
+                    res.set("Accepts", "application/json").status(403).end();
+                }else{
+                    //Vergabe der ID an neue FavRoute
+                    newFavRoute.id = favrouteID++;
+                    data.favroutes.push(newFavRoute);
+                    res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(201).json(data.favroutes[favrouteID-1]).end();
+                }
+            });
         } else {
             res.set("Content-Type", 'application/json').status(400).end();
         }
@@ -92,11 +139,52 @@ router.put('/:id', bodyParser.json(), function(req, res){
             //Index der zu aendernden Route wird gesucht
             var routeID = data.favroutes.findIndex(function(x){ return x.id === reqID });
             if(routeID > -1){
-                //Index der Route gefunden, jetzt wird sie geaendert
                 changeFavRoute.id = reqID;
-                data.favroutes[routeID] = changeFavRoute;
-                console.log(data.favroutes[routeID]);
-                res.set("Content-Type", 'application/json').status(201).json(data.favroutes[routeID]).end();
+            
+                //Funktion, die den curl-request versendet
+                function sendRequest(n, callback){
+                    console.log('Sende Request: ', n);
+                    //URL anpassen
+                    var currentOptions = options;
+                    currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + changeFavRoute.stations[n].id);
+                    console.log("request an: " + currentOptions.url);
+                    //curl-request an die Deutsche Bahn api mit den passenden Optionen
+                    curl.request(currentOptions, function(err, dbDaten){
+                        if(err != null){
+                            callback(true);
+                        }else{
+                            var dbDaten = JSON.parse(dbDaten);
+                            //Name der Station aus den erhaltenen Daten
+                            changeFavRoute.stations[n].name = dbDaten.name;
+                            //Array mit dem Equipment fuer die Station mit passendem Gleis
+                            var equipment = []
+                            //Schleife zum pushen des Equipments auf das equipment Array
+                            for(var j = 0; j < dbDaten.facilities.length; j++) {
+                                //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
+                                if(dbDaten.facilities[j].description != null){
+                                if(dbDaten.facilities[j].description.indexOf(changeFavRoute.stations[n].gleis.toString()) >= 0){
+                                    equipment.push(dbDaten.facilities[j].equipmentnumber);
+                                }
+                            }
+                            }
+                            changeFavRoute.stations[n].equipment = equipment;
+                            callback(null);
+                        }
+                    });
+                };
+            
+                //Aufruf der async Funktion timesSeries, zum seriellen Abarbeiten der curl-requests
+                async.timesSeries(changeFavRoute.stations.length, sendRequest, function (err, results){
+                    //Wenn alle Abfragen bearbeitet wurden und eine Response erstellt wurde
+                    console.log("Done!");
+                    //err ist true wenn einer aufgetreten ist
+                    if(err){
+                        res.set("Accepts", "application/json").status(403).end();
+                    }else{
+                        data.favroutes[routeID] = changeFavRoute;
+                        res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(201).json(data.favroutes[routeID]).end();
+                    }
+                });
             }else{
                 //keine Route mit der passenden ID gefunden => not found
                 res.set("Content-Type", 'application/json').status(404).end();
@@ -144,9 +232,39 @@ router.delete('/:id', function(req, res){
     }
 });
 
-//Holt alle vorhandenen routen
+//Holt alle vorhandenen routen oder gefilter nach bestimmten Parametern
 router.get('/', function(req, res){
-    res.set("Content-Type", 'application/json').status(200).json(data.favroutes).end();
+    var start = parseInt(req.query.start);
+    var finish = parseInt(req.query.finish);
+    //Pruefen ob Parameter fuers filtern uebergeben wurden
+    if(!(isNaN(start) || start < 0 || isNaN(finish) || finish < 0)){
+        filterStartFinish(start, finish, req.query.sort);
+    }else if(isNaN(start) || start < 0 || isNaN(finish) || finish < 0){
+        var reqRoute = data.favroutes;
+        //Sortierung des Arrays wenn Parameter gegeben
+        if(req.query.sort == 'short'){ reqRoute.sort(function(a, b){ return a.stations.length - b.stations.length; }); }
+        if(req.query.sort == 'long'){ reqRoute.sort(function(a, b){ return b.stations.length - a.stations.length; }); }
+        res.set("Content-Type", 'application/json').status(200).json(reqRoute).end();
+    }
+    
+    function filterStartFinish(start, finish, sort){
+            //Routen, die mit der Start und Finish Station uebereinstimmen werden gesucht
+            var reqRoute = data.favroutes.filter(function(x){ return x.stations[0].id == start
+                                                                  && x.stations[x.stations.length-1].id == finish});
+            if(reqRoute.length > 0){
+                //Bei Erfolgreiche gefundenem Index wird die FavRoute ausgegeben
+                //Sortierung des Arrays wenn Parameter gegeben
+                if(sort == 'short'){ reqRoute.sort(function(a, b){ return a.stations.length - b.stations.length; }); }
+                if(req.query.sort == 'long'){ reqRoute.sort(function(a, b){ return b.stations.length - a.stations.length; }); }
+                res.set("Content-Type", 'application/json').status(200).json(reqRoute).end();
+            }else{
+                //Kein Index gefunden => gesuchte FavRoute nicht vorhanden => not found
+                res.set("Content-Type", 'application/json').status(404).end();
+            }
+        };
 });
+
+//Evtl nuetzlich
+//Object.keys(req.query).length !== 0
 
 module.exports = router;

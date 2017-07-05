@@ -2,35 +2,57 @@
 //Beliebige Menge an stations objekten
 //aber minimal 2
 {
-	"stations": [
-		{
-			"id": 3330,
-			"gleis": 3
-		},
-		{
-			"id": 2410,
-			"gleis": 4
-		},
-		{
-			"id": 3330,
-			"gleis": 4
-		},
-		{
-			"id": 2410,
-			"gleis": 4
-		}
-	]
+   "stations":[
+      {
+         "id":3330,
+         "gleis":2
+      },
+      {
+         "id":3320,
+         "gleis":10
+      },
+      {
+         "id":2410,
+         "gleis":1
+      }
+   ]
 }
+//Nach dem der Post abgesetzt wurde holt sich der Dienstgeber weitere 
+//Informationen von der Deutschen Bahn API, wie die zugehoerigen Equipments und den Namen der Station
+//Struktur des internen Arrays, wie die Datem im server gespeichert werden
+[
+   {
+      "stations":[
+         {
+            "id":3330,
+            "gleis":2,
+            "name":"Köln-Ehrenfeld",
+            "equipment":[
+               10292990,
+               10293001
+            ]
+         },
+         {
+            "id":3320,
+            "gleis":10,
+            "name":"Köln Hbf",
+            "equipment":[
+               10409032,
+               10035445,
+               10035446,
+               10035579,
+               10099507
+            ]
+         },
+         {
+            "id":2410,
+            "gleis":1,
+            "name":"Gummersbach",
+            "equipment":[
 
-//Struktur der GET Anfrage fuer /route/
-//nur 2 stationen duerfen uebergeben werden
-{
-	"stations": [
-		{
-			"id": 3330
-		},
-		{
-			"id": 2410
-		}
-	]
-}
+            ]
+         }
+      ],
+      "id":0
+   }
+]
