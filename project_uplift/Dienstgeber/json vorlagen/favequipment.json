@@ -1,8 +1,9 @@
 //Struktur fuer die post/put Funktionen
+//Muss mindestens eine equipID sein
 {
    "equipments":[
       {
-         "equipID":3336
+         "equipID":10035445
       }
    ]
 }
@@ -12,13 +13,13 @@
    {
       "equipments":[
          {
-            "equipID":3336
+            "equipID":10035445
          },
          {
-            "equipID":3221
+            "equipID":10293001
          },
          {
-            "equipID":3223
+            "equipID":10409032
          }
       ],
       "id":0

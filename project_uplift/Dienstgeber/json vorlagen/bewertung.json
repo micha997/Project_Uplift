@@ -1,5 +1,4 @@
 //Struktur der POST Anfrage auf den server
-//(wertung OR comment) OR (wertung AND comment)
 {  
    "wertung":1,
    "comment":"Lauft ganz gut"
@@ -8,12 +7,11 @@
 //wertung = 0 : neutral
 //wertung = -1 : negativ
 
-//require eins von beiden
 //equipmentID wird ueber die URL Parameter uebergeben
-//der Bewertung eine ID verpassen fuer DELETE Anfragen
-
 
 //Struktur des internen Arrays, wie die Datem im server gespeichert werden
+//"gesamtWertung" wird mit jedem Post/Del geupdated (berechnet mit den "wertungen")
+//"bewertungID" ist fuer die ID-Vergabe der Bewertungen (einfacher Zaehler)
 [
    {
       "bewertungen":[
@@ -29,8 +27,8 @@
          }
       ],
       "equipID":10035579,
-      "gesamtWertung":0, //gesamtWertung wird mit jedem Post/Del geupdated (berechnet mit den "wertungen")
-      "bewertungID":2    //Zaehler fuer die ID vergabe der Bewertungen
+      "gesamtWertung":0,
+      "bewertungID":2    
    },
    {
       "bewertungen":[
