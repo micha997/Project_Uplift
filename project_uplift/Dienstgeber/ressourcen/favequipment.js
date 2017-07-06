@@ -49,10 +49,34 @@ router.get('/:id',function(req,res){
         res.set("Content-Type", 'application/json').status(400).end();
     }else{
         //Index der FavEquipment-Liste, dass man sucht wird im Array gesucht
-        var reqFavEquip = data.favequips.findIndex(function(x){ return x.id === reqID });
-        if(reqFavEquip > -1){
+        var reqFavEquipID = data.favequips.findIndex(function(x){ return x.id === reqID; });
+        if(reqFavEquipID > -1){
             //Bei Erfolgreiche gefundenem Index wird die favequip-liste ausgegeben
-            res.set("Content-Type", 'application/json').status(200).json(data.favequips[reqFavEquip]).end();
+            var reqFavEquip = data.favequips[reqFavEquipID];
+            
+            //Sortieren nach besten-bewerteten zu erst
+            if(req.query.sort == 'top'){ reqFavEquip.equipments.sort(function(a, b){
+                //Die passenden Bewertungs-Einträge werden gesucht
+                var bewertung1 = data.bewertung.find(function(y){ return y.equipID === a.equipID });
+                var bewertung2 = data.bewertung.find(function(y){ return y.equipID === b.equipID });
+                //Absicherung falls keine Bewertungen vorhanden sind
+                var wert1 = bewertung1 == null ? 0 : bewertung1.gesamtWertung;
+                var wert2 = bewertung2 == null ? 0 : bewertung2.gesamtWertung;
+                return wert2 - wert1;
+            });}
+    
+            //Sortieren nach schlecht-bewerteten zu erst
+            if(req.query.sort == 'low'){ reqFavEquip.equipments.sort(function(a, b){
+                //Die passenden Bewertungs-Einträge werden gesucht
+                var bewertung1 = data.bewertung.find(function(y){ return y.equipID === a.equipID });
+                var bewertung2 = data.bewertung.find(function(y){ return y.equipID === b.equipID });
+                //Absicherung falls keine Bewertungen vorhanden sind
+                var wert1 = bewertung1 == null ? 0 : bewertung1.gesamtWertung;
+                var wert2 = bewertung2 == null ? 0 : bewertung2.gesamtWertung;
+                return wert1 - wert2;
+            });}
+            
+            res.set("Content-Type", 'application/json').status(200).json(reqFavEquip).end();
         }else{
             //Kein Index gefunden => gesuchtefavequip-liste nicht vorhanden => not found
             res.set("Content-Type", 'application/json').status(404).end();

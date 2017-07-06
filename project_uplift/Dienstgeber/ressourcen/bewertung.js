@@ -79,8 +79,8 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
              console.log(foundEquipID);
              if(foundEquipID > -1){
                  //Es wurde eine EquipmentID im Array gefunden und die neue Bewertung wird hinzugefuegt
-                 newBewertung.id = data.bewertung[foundEquipID].bewertungID++;
-                 data.bewertung[foundEquipID].gesamtWertung += newBewertung.wertung;
+                 newBewertung.id = data.bewertung[foundEquipID].bewertungID++; //ID vergabe
+                 data.bewertung[foundEquipID].gesamtWertung += newBewertung.wertung; //gesamtWertung anpassen
                  data.bewertung[foundEquipID].bewertungen.push(newBewertung);
                  console.log(data.bewertung);
                  res.set("Content-Type", 'application/json').set("Location", "/bewertung/" + equipID).set("BewertungID", (data.bewertung[foundEquipID].bewertungID - 1)).status(201).json(newBewertung).end();
@@ -94,10 +94,9 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
                      "gesamtWertung" : 0,
                      "bewertungID" : 0
                  };
-                 newBewertung.id = newEintrag.bewertungID++;
-                 //Bewertung wird dem Eintrag gepusht
-                 newEintrag.gesamtWertung += newBewertung.wertung;
-                 newEintrag.bewertungen.push(newBewertung);
+                 newBewertung.id = newEintrag.bewertungID++; //ID-Vergabe an die einzelne Bewertung
+                 newEintrag.gesamtWertung += newBewertung.wertung; //gesamtWertung wird angepasst
+                 newEintrag.bewertungen.push(newBewertung); //Bewertung wird an den Eintrag gepusht
                  newEintrag.equipID = equipID;
                  //Eintrag mit erster Bewertung wird dem Haupt-Array(data.bewertung) hinzugefuegt
                  data.bewertung.push(newEintrag);
@@ -128,9 +127,9 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                     var foundBewertungID = data.bewertung[foundEquipID].bewertungen.findIndex(function(x){ return x.id === query });
                     if(foundBewertungID > -1){
                         //Bewertung des Equipment gefunden
+                        //gesamtWertung muss angepasst werden, durch das Entfernen der Bewertung
                         data.bewertung[foundEquipID].gesamtWertung -= data.bewertung[foundEquipID].bewertungen[foundBewertungID].wertung;
                         var removedBewertung = data.bewertung[foundEquipID].bewertungen.splice(foundBewertungID, 1);
-                        //data.bewertung[foundEquipID].gesamtWertung -= removedBewertung.wertung;
                         console.log(removedBewertung);
                         console.log(data.bewertung);
                         res.set("Content-Type", 'application/json').status(200).end();
