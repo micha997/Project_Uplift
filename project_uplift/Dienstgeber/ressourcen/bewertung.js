@@ -17,12 +17,8 @@ var postSchema = {
         "wertung" : {"type" : "integer"},
         "comment" : {"type" : "string"}
     },
-    "additionalProperties": false,
-    "anyOf": [
-        { "required": [ "wertung" ] },
-        { "required": [ "comment" ] },
-        { "required": [ "wertung", "comment" ] }
-    ]
+    "required": [ "wertung", "comment" ],
+    "additionalProperties": false    
 };
 
 //Middleware
@@ -37,26 +33,11 @@ router.get('/', bodyParser.json(), function(req, res){
     var reqBewertung = data.bewertung;
     
     //Sortieren nach besten-bewerteten zu erst
-    if(req.query.sort == 'top'){ reqBewertung.sort(function(a, b){
-        var insWertungA = 0;
-        var insWertungB = 0;
-        //Bewertungen durchlaufen und Wertungen zaehlen
-        for(var i = 0; i<a.bewertungen.length; i++){ insWertungA += a.bewertungen[i].wertung; }
-        for(var j = 0; j<b.bewertungen.length; j++){ insWertungB += b.bewertungen[j].wertung; }
-        return insWertungB - insWertungA;
-    });
-                               }
+    if(req.query.sort == 'top'){ reqBewertung.sort(function(a, b){ return b.gesamtWertung - a.gesamtWertung;});}
     
     //Sortieren nach schlecht-bewerteten zu erst
-    if(req.query.sort == 'low'){ reqBewertung.sort(function(a, b){
-        var insWertungA = 0;
-        var insWertungB = 0;
-        //Bewertungen durchlaufen und Wertungen zaehlen
-        for(var i = 0; i<a.bewertungen.length; i++){ insWertungA += a.bewertungen[i].wertung; }
-        for(var j = 0; j<b.bewertungen.length; j++){ insWertungB += b.bewertungen[j].wertung; }
-        return insWertungA - insWertungB;
-    });
-                               }
+    if(req.query.sort == 'low'){ reqBewertung.sort(function(a, b){ return a.gesamtWertung - b.gesamtWertung;});}
+           
     res.set("Content-Type", 'application/json').status(200).json(reqBewertung).end();
 });
 
@@ -99,6 +80,7 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
              if(foundEquipID > -1){
                  //Es wurde eine EquipmentID im Array gefunden und die neue Bewertung wird hinzugefuegt
                  newBewertung.id = data.bewertung[foundEquipID].bewertungID++;
+                 data.bewertung[foundEquipID].gesamtWertung += newBewertung.wertung;
                  data.bewertung[foundEquipID].bewertungen.push(newBewertung);
                  console.log(data.bewertung);
                  res.set("Content-Type", 'application/json').set("Location", "/bewertung/" + equipID).set("BewertungID", (data.bewertung[foundEquipID].bewertungID - 1)).status(201).json(newBewertung).end();
@@ -109,10 +91,12 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
                  var newEintrag = {
                      "bewertungen": [],
                      "equipID" : 0,
+                     "gesamtWertung" : 0,
                      "bewertungID" : 0
                  };
                  newBewertung.id = newEintrag.bewertungID++;
                  //Bewertung wird dem Eintrag gepusht
+                 newEintrag.gesamtWertung += newBewertung.wertung;
                  newEintrag.bewertungen.push(newBewertung);
                  newEintrag.equipID = equipID;
                  //Eintrag mit erster Bewertung wird dem Haupt-Array(data.bewertung) hinzugefuegt
@@ -144,7 +128,9 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                     var foundBewertungID = data.bewertung[foundEquipID].bewertungen.findIndex(function(x){ return x.id === query });
                     if(foundBewertungID > -1){
                         //Bewertung des Equipment gefunden
+                        data.bewertung[foundEquipID].gesamtWertung -= data.bewertung[foundEquipID].bewertungen[foundBewertungID].wertung;
                         var removedBewertung = data.bewertung[foundEquipID].bewertungen.splice(foundBewertungID, 1);
+                        //data.bewertung[foundEquipID].gesamtWertung -= removedBewertung.wertung;
                         console.log(removedBewertung);
                         console.log(data.bewertung);
                         res.set("Content-Type", 'application/json').status(200).end();

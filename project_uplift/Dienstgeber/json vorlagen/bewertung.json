@@ -29,7 +29,8 @@
          }
       ],
       "equipID":10035579,
-      "bewertungID":2
+      "gesamtWertung":0, //gesamtWertung wird mit jedem Post/Del geupdated (berechnet mit den "wertungen")
+      "bewertungID":2    //Zaehler fuer die ID vergabe der Bewertungen
    },
    {
       "bewertungen":[
@@ -40,6 +41,7 @@
          }
       ],
       "equipID":10099507,
+      "gesamtWertung":1,
       "bewertungID":1
    }
 ]
