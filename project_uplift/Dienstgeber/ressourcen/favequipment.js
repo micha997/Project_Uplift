@@ -106,10 +106,10 @@ router.put('/:id',bodyParser.json(),function(req,res){
                     data.favequips[foundID].equipments.push(addFavEquip.equipments[i]);
                 }
                 console.log(data.favequips[foundID]);
-                res.set("Content-Type", 'application/json').status(201).json(data.favequips[foundID]).end();
+                res.set("Content-Type", 'application/json').status(200).json(data.favequips[foundID]).end();
             }else{
                 //keine FavEquip-Liste mit der passenden ID gefunden => not found
-                res.set("Content-Type", 'application/json').status(404).end();
+                res.set("Content-Type", 'application/json').status(204).end();
             }
         }
     }
@@ -154,7 +154,7 @@ router.delete('/:id',function(req,res){
             console.log(removedFavEquip);
             res.set("Content-Type", 'application/json').status(200).end();
         }else{
-            res.set("Content-Type", 'application/json').status(404).end();
+            res.set("Content-Type", 'application/json').status(204).end();
         }        
     }
 });

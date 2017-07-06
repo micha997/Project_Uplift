@@ -182,12 +182,12 @@ router.put('/:id', bodyParser.json(), function(req, res){
                         res.set("Accepts", "application/json").status(403).end();
                     }else{
                         data.favroutes[routeID] = changeFavRoute;
-                        res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(201).json(data.favroutes[routeID]).end();
+                        res.set("Content-Type", 'application/json').set("Location", "/favroute/" + (favrouteID - 1)).status(200).json(data.favroutes[routeID]).end();
                     }
                 });
             }else{
                 //keine Route mit der passenden ID gefunden => not found
-                res.set("Content-Type", 'application/json').status(404).end();
+                res.set("Content-Type", 'application/json').status(204).end();
             }
         }
     }
@@ -227,7 +227,7 @@ router.delete('/:id', function(req, res){
             console.log(removedRoute);
             res.set("Content-Type", 'application/json').status(200).end();
         }else{
-            res.set("Content-Type", 'application/json').status(404).end();
+            res.set("Content-Type", 'application/json').status(204).end();
         }        
     }
 });

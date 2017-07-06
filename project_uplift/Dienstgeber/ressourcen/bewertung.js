@@ -135,7 +135,7 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                         res.set("Content-Type", 'application/json').status(200).end();
                     }else{
                         //Bewertung zum entfernen nicht vorhanden ist
-                        res.set("Content-Type", 'application/json').status(404).end();
+                        res.set("Content-Type", 'application/json').status(204).end();
                     }
                     break;
                 case false:
@@ -143,12 +143,12 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                     var removedEquipment = data.bewertung.splice(foundEquipID, 1);
                     console.log(removedEquipment);
                     console.log(data.bewertung);
-                    res.set("Content-Type", 'application/json').status(200).end();
+                    res.set("Content-Type", 'application/json').status(204).end();
                     break;
                                                   }
         }else{
             //ID nicht gefunden => not found
-            res.set("Content-Type", 'application/json').status(404).end();
+            res.set("Content-Type", 'application/json').status(204).end();
         }  
     }
 });
