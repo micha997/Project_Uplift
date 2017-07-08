@@ -30,8 +30,8 @@ router.get('/', function(req,res){
 	
     var path = '/favroute';
 
-    var publishing = clientFaye.publish(path,{'Sukkk':"a cock",
-    'you':"motherfucker"});
+    var publishing = clientFaye.publish(path,{'Name':"DatName",
+    'Numba':12});
   
     var url = dgHost+'/favroute';
 
