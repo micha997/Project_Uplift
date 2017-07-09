@@ -28,17 +28,65 @@ var DBoptions =
 //Bsp Methode mit publish
 router.get('/', function(req,res){
 	
-    var path = '/favroute';
+    var path = '/favroute/'+1234;
+    
+    var gibim = {
+        'Name':"DatName",
+        'Numba':12
+    }
+    var sendim = JSON.stringify(gibim);
 
-    var publishing = clientFaye.publish(path,{'Name':"DatName",
-    'Numba':12});
+    var publishing = clientFaye.publish(path,sendim);
   
     var url = dgHost+'/favroute';
 
-    request.get(url,function(err,response,body){
-        resBody=JSON.parse(body);
-        res.json(resBody);
-    });
+    //request.get(url,function(err,response,body){
+    //    resBody=JSON.parse(body);
+    //    res.json(resBody);
+    //});
+});
+
+//Subscribe zu den Bewertungen zum pruefen ob bei einer der Favroutes die EquipID vorhanden ist
+var bewertungSub = clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
+    //Die Equipmentnummer wird aus dem Topic extrahiert
+    var channelArr = channel.match(/\d+/g);
+    var channelNum = parseInt(channelArr[0]);
+    
+    console.log("EquipID ist: "+ channelNum);
+    console.log("Bewertung ist: "+ message.wertung);
+    console.log("Comment ist: "+message.comment);
+    
+    //Die erhaltene Message wird verpackt fuer einen potentielen Publish
+    var newBewertung = 
+        {
+            'equipID': channelNum,
+            'wertung': message.wertung,
+            'comment': message.comment
+        };
+    
+    //Pruefen ob es publish-wuerdig ist (wertung = schlecht)
+    //Wenn es Wuerdig ist dann besorgt man sich die favroutes vom dienstgeber
+    //und prueft ob einer der Routen eines dieser Equipments hat
+    //Wenn ja dann wird auf dem topic dieser favroute gepublishet
+    if(message.wertung < 0){
+        var url = dgHost +'/favroute'
+        request.get(url,function(err,response,body){
+            if(response.statusCode == 200){
+                resBody=JSON.parse(body);
+                for(var i = 0;i<resBody.length;i++){
+                    for(var j = 0;j<resBody[i].stations.length;j++){
+                        for(var k = 0;k<resBody[i].stations[j].equipment.length;k++){
+                            if(resBody[i].stations[j].equipment[k] == channelNum){
+                                var path = '/favroute/' + resBody[i].id + '/bewertung';
+                                clientFaye.publish(path,newBewertung);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
 });
 
 router.post('/', bodyParser.json(), function(req,res){    
@@ -95,7 +143,7 @@ router.put('/:id', bodyParser.json(), function(req,res){
     var newFavRoute = req.body;
     
     //Path fuer Publish
-    var pubPath = '/favroute'; //+ putID + '/change';
+    var pubPath = '/favroute/' + putID + '/change';
     
     //URL fuer den http-request an unseren Dienstgeber
     var putURL = dgHost + '/favroute/' + putID;
@@ -160,25 +208,29 @@ router.get('/:id', function(req,res){
                 //curl-request an die Deutsche Bahn api mit den passenden Optionen
                 curl.request(currentOptions, function(err, dbDaten){
                     var dbDaten = JSON.parse(dbDaten);
-                    //Array fuer das jeweilige Equipment an der Station
-                    newEquipment = [];
+                    if(err != null || typeof dbDaten.stationnumber == 'undefined'){
+                        callback(true);
+                    }else{
+                        //Array fuer das jeweilige Equipment an der Station
+                        newEquipment = [];
                     
-                    //Schleife zum pushen des Equipments auf das newStation.equipment Array
-                    for(var j = 0; j < dbDaten.facilities.length; j++) {
-                        //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
-                        if(dbDaten.facilities[j].description != null){
-                            if(dbDaten.facilities[j].description.indexOf(reqBody.stations[n].gleis.toString()) >= 0){
-                                var equip1 ={
-                                    "equipID" : dbDaten.facilities[j].equipmentnumber,
-                                    "equipmentTyp" : dbDaten.facilities[j].type,
-                                    "status" : dbDaten.facilities[j].state
+                        //Schleife zum pushen des Equipments auf das newStation.equipment Array
+                        for(var j = 0; j < dbDaten.facilities.length; j++) {
+                            //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
+                            if(dbDaten.facilities[j].description != null){
+                                if(dbDaten.facilities[j].description.indexOf(reqBody.stations[n].gleis.toString()) >= 0){
+                                    var equip1 ={
+                                        "equipID" : dbDaten.facilities[j].equipmentnumber,
+                                        "equipmentTyp" : dbDaten.facilities[j].type,
+                                        "status" : dbDaten.facilities[j].state
+                                    }
+                                    newEquipment.push(equip1);
                                 }
-                                newEquipment.push(equip1);
                             }
                         }
-                    }
                     reqBody.stations[n].equipment = newEquipment;
                     callback(null);
+                    }
                 });
             };
             
@@ -209,7 +261,7 @@ router.delete('/:id', function(req,res){
     var delID = req.params.id;
     
     //Path fuer Publish
-    var pubPath = '/favroute'; //+ delID + '/change';
+    var pubPath = '/favroute/' + delID + '/change';
     
     //URL fuer den http-request an unseren Dienstgeber
     var delURL = dgHost + '/favroute/' + delID;

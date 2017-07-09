@@ -79,10 +79,10 @@ router.post('/', bodyParser.json(), function(req,res){
                 console.log("request an: " + currentOptions.url);
                 //curl-request an die Deutsche Bahn api mit den passenden Optionen
                 curl.request(currentOptions, function(err, dbDaten){
-                    if(err != null){
+                    var dbDaten = JSON.parse(dbDaten);
+                    if(err != null || typeof dbDaten.stationnumber == 'undefined'){
                         callback(true);
                     }else{
-                        var dbDaten = JSON.parse(dbDaten);
                         //Name der Station aus den erhaltenen Daten
                         newFavRoute.stations[n].name = dbDaten.name;
                         //Array mit dem Equipment fuer die Station mit passendem Gleis
@@ -150,10 +150,10 @@ router.put('/:id', bodyParser.json(), function(req, res){
                     console.log("request an: " + currentOptions.url);
                     //curl-request an die Deutsche Bahn api mit den passenden Optionen
                     curl.request(currentOptions, function(err, dbDaten){
-                        if(err != null){
+                        var dbDaten = JSON.parse(dbDaten);
+                        if(err != null || typeof dbDaten.stationnumber == 'undefined'){
                             callback(true);
                         }else{
-                            var dbDaten = JSON.parse(dbDaten);
                             //Name der Station aus den erhaltenen Daten
                             changeFavRoute.stations[n].name = dbDaten.name;
                             //Array mit dem Equipment fuer die Station mit passendem Gleis
