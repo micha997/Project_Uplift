@@ -87,7 +87,7 @@ clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
 			//An jedes Topic mit den IDs publishen
 			for(var i = 0;i<publishTo.length;i++){
 				var pubPath = '/favroute/' + publishTo[i] + '/bewertung';
-				console.log("Publish new FavRoute: " + pubPath);
+				console.log("Publish bewertung on FavRoute: " + pubPath);
 				clientFaye.publish(pubPath,newBewertung);
 			}
 		});
