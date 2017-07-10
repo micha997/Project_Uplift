@@ -1,11 +1,8 @@
-var express = require('express'),
-	router = express.Router(),
-    http = require('http'),
-    request = require('request'),
-	faye = require('faye'),
-    async = require('async'),
-    curl = require('curlrequest'),
-	bodyParser = require('body-parser');
+var faye = require('faye');
+var http = require('http');
+var request = require('request');
+var async = require('async');
+var curl = require('curlrequest');
 
 const useName = "favroute";
 
@@ -25,36 +22,11 @@ var DBoptions =
         }
     };
 
-//Bsp Methode mit publish
-router.get('/', function(req,res){
-	
-    var path = '/favroute/'+1234;
-    
-    var gibim = {
-        'Name':"DatName",
-        'Numba':12
-    }
-    var sendim = JSON.stringify(gibim);
-
-    var publishing = clientFaye.publish(path,sendim);
-  
-    var url = dgHost+'/favroute';
-
-    //request.get(url,function(err,response,body){
-    //    resBody=JSON.parse(body);
-    //    res.json(resBody);
-    //});
-});
-
 //Subscribe zu den Bewertungen zum pruefen ob bei einer der Favroutes die EquipID vorhanden ist
-var bewertungSub = clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
+clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
     //Die Equipmentnummer wird aus dem Topic extrahiert
     var channelArr = channel.match(/\d+/g);
     var channelNum = parseInt(channelArr[0]);
-    
-    console.log("EquipID ist: "+ channelNum);
-    console.log("Bewertung ist: "+ message.wertung);
-    console.log("Comment ist: "+message.comment);
     
     //Die erhaltene Message wird verpackt fuer einen potentielen Publish
     var newBewertung = 
@@ -68,221 +40,135 @@ var bewertungSub = clientFaye.subscribe('/bewertung/*').withChannel(function(cha
     //Wenn es Wuerdig ist dann besorgt man sich die favroutes vom dienstgeber
     //und prueft ob einer der Routen eines dieser Equipments hat
     //Wenn ja dann wird auf dem topic dieser favroute gepublishet
-    if(message.wertung < 0){
-        var url = dgHost +'/favroute'
-        request.get(url,function(err,response,body){
-            if(response.statusCode == 200){
-                resBody=JSON.parse(body);
-                for(var i = 0;i<resBody.length;i++){
-                    for(var j = 0;j<resBody[i].stations.length;j++){
-                        for(var k = 0;k<resBody[i].stations[j].equipment.length;k++){
-                            if(resBody[i].stations[j].equipment[k] == channelNum){
-                                var path = '/favroute/' + resBody[i].id + '/bewertung';
-                                clientFaye.publish(path,newBewertung);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-    
+	if(message.wertung < 0){
+		async.waterfall([
+			function(callback){
+				//Array der FavrouteIDs an die am Ende gepublisht wird 
+				var publishTo = [];
+				var url = dgHost +'/favroute'
+				request.get(url,function(err,response,body){
+					if(response.statusCode == 200){
+						resBody=JSON.parse(body);
+						//Ab hier wird geprueft ob eine der Routen das jeweiige Equipment enthaelt
+						for(var i = 0;i<resBody.length;i++){
+							for(var j = 0;j<resBody[i].stations.length;j++){
+								for(var k = 0;k<resBody[i].stations[j].equipment.length;k++){
+									if(resBody[i].stations[j].equipment[k] == channelNum){
+										//Es wurde eine FavRoute mit diesem Equipment gefunden
+										//ID der FavRoute wird ins Array hinzugefuegt
+										publishTo.push(resBody[i].id);
+									}
+								}
+							}
+						}
+					}
+					callback(null, publishTo);
+				});
+			},
+			function(publishTo, callback){
+				//Wenn es Routen mit diesem Equipment gibt
+				if(publishTo.length > 0){
+					//URL anpassen fuer Deutsche Bahn Anfrage
+					var currentOptions = DBoptions;
+					currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/facilities/" + channelNum);
+					//curl-request an die Deutsche Bahn API mit den passenden Optionen
+					curl.request(currentOptions, function(err, dbDaten){
+						var dbDaten = JSON.parse(dbDaten);
+						if(err == null && typeof dbDaten.stationnumber != 'undefined'){
+							//Den offizielle Status des Equipments an die Publish-Nachricht haengen
+							newBewertung.currentState = dbDaten.state;
+							newBewertung.EquipmentTyp = dbDaten.type;
+						}
+						callback(null, publishTo);
+					});
+				}
+			}
+		],function(err, publishTo){
+			//An jedes Topic mit den IDs publishen
+			for(var i = 0;i<publishTo.length;i++){
+				var pubPath = '/favroute/' + publishTo[i] + '/bewertung';
+				console.log("Publish new FavRoute: " + pubPath);
+				clientFaye.publish(pubPath,newBewertung);
+			}
+		});
+	}     
 });
 
-router.post('/', bodyParser.json(), function(req,res){    
-    //JSON Body
-    var newFavRoute = req.body;
-    
-    //Path fuer Publish
-    var pubPath = '/favroute'; //newFavroute.stations[0].id/newFavroute.stations[newFavroute.stations.length-1].id;
-    
-    //URL fuer den http-request an unseren Dienstgeber
+//Subscribe auf favroute
+clientFaye.subscribe('/favroute', function(message){
+	//Kanal fuer den spaeteren Publish
+	//"/favroute/{start-stationID}/{end-stationID}"
+    var pubPath = '/favroute/'+ message.stations[0].id + '/' + message.stations[message.stations.length-1].id;
+	
+    //URL fuer den http-request an den Dienstgeber
     var postURL = dgHost + '/favroute/';
     
-    //Optionen fuer das POST
+    //Optionen fuer das POST-request
     var postOptions = {
         url: postURL,
         method: 'POST',
-        json: newFavRoute,
+        json: message,
         headers: {
             'Content-Type' : 'application/json'
         }
     }
-    
-    //Request an Dienstgeber starten
+	
+	//Request an Dienstgeber starten
     request(postOptions, function(err, response, body){        
-        if(response.statusCode == 201){
-        
+        //Wenn es erfolgreich auf den Dienstgeber gepostet wurden
+		//dann wird ein Piblish durchgefuehrt auf dem Topic
+		//"/favroute/{start-stationID}/{end-stationID}"
+		if(response.statusCode == 201){
             var ressLocation = dgHost + response.headers.location;
-
+			
+			console.log("Publish new FavRoute: " + pubPath);
+			
             var publishing = clientFaye.publish(pubPath, {
                 'Operation' : 'POST',
                 'Ressource' : ressLocation
             });
-        
-            //Erfolgreich erstellt
-            res.set("Content-Type", 'application/json').status(201).end();
-        }else if(response.statusCode == 406){
-            //Falsches Format
-            res.set("Content-Type", 'application/json').status(406).end();
-        }else if(response.statusCode == 400 || err){
-            //Error
-            res.set("Content-Type", 'application/json').status(400).end();
-        }else if(response.statusCode == 403){
-            //Problem beim nutzten des externen WebService beim Dienstgeber
-            res.set("Content-Type", 'application/json').status(403).end();
         }
     });
 });
 
-router.put('/:id', bodyParser.json(), function(req,res){
-    //Ressource ID
-    var putID = req.params.id;
-    
-    //JSON Body
-    var newFavRoute = req.body;
-    
-    //Path fuer Publish
-    var pubPath = '/favroute/' + putID + '/change';
-    
+//Subscribe auf favroute bei PUT und DELETE Ausfuehrungen
+clientFaye.subscribe('/favroute/*').withChannel(function(channel, message){
+	
+	//Die Equipmentnummer wird aus dem Topic extrahiert
+    var channelArr = channel.match(/\d+/g);
+    var channelNum = parseInt(channelArr[0]);
+	
+	var operation = message.Operation;
+	delete message.Operation;
+	
+	//Path fuer Publish
+    var pubPath = '/favroute/' + channelNum + '/change';
+	
     //URL fuer den http-request an unseren Dienstgeber
-    var putURL = dgHost + '/favroute/' + putID;
+    var URL = dgHost + '/favroute/' + channelNum;
     
-    //Optionen fuer das PUT
-    var putOptions = {
-        url: putURL,
-        method: 'PUT',
-        json: newFavRoute,
+    //Optionen fuer das PUT/DELETE
+    var Options = {
+        url: URL,
+        method: operation,
+        json: message,
         headers: {
             'Content-Type' : 'application/json'
         }
     }
-    
-    //Request an Dienstgeber starten
-    request(putOptions, function(err, response, body){
+	
+	//Request an Dienstgeber starten
+    request(Options, function(err, response, body){        
         if(response.statusCode == 200){
-            var publishing = clientFaye.publish(pubPath, {
-                'Operation' : 'PUT',
-                'Ressource' : putURL
-            });
-            //Erfolgreich geaendert
-            res.set("Content-Type", 'application/json').status(200).end();
-        }else if(response.statusCode == 204){
-            //No content to put
-            res.set("Content-Type", 'application/json').status(204).end();
-        }else if(response.statusCode == 400 || err){
-            //Error
-            res.set("Content-Type", 'application/json').status(400).end();
-        }else if(response.statusCode == 406){
-            //Format falsch
-            res.set("Content-Type", 'application/json').status(406).end();
-        }else if(response.statusCode == 403){
-            //Problem beim nutzten des externen WebService beim Dienstgeber
-            res.set("Content-Type", 'application/json').status(403).end();
-        }
-    });
-});
-
-router.get('/:id', function(req,res){
-    //Ressource ID
-    var getID = req.params.id;
-    
-    //URL fuer den http-request an unseren Dienstgeber
-    var getURL = dgHost + '/favroute/' + getID;
-    
-    //Request an Dienstgeber starten
-    request.get(getURL, function(err, response, body){
-        if(response.statusCode == 200){
-            var reqBody = JSON.parse(body);
-            //Erfolgreich geholt
-            
-            //=> Aktuelle Informationen von der Deutschen Bahn holen
-            
-            //Funktion, die den curl-request versendet
-            function sendRequest(n, callback){
-                console.log('Sende Request: ', n);
-                //URL anpassen
-                var currentOptions = DBoptions;
-                currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + reqBody.stations[n].id);
-                console.log("request an: " + currentOptions.url);
-                //curl-request an die Deutsche Bahn api mit den passenden Optionen
-                curl.request(currentOptions, function(err, dbDaten){
-                    var dbDaten = JSON.parse(dbDaten);
-                    if(err != null || typeof dbDaten.stationnumber == 'undefined'){
-                        callback(true);
-                    }else{
-                        //Array fuer das jeweilige Equipment an der Station
-                        newEquipment = [];
-                    
-                        //Schleife zum pushen des Equipments auf das newStation.equipment Array
-                        for(var j = 0; j < dbDaten.facilities.length; j++) {
-                            //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
-                            if(dbDaten.facilities[j].description != null){
-                                if(dbDaten.facilities[j].description.indexOf(reqBody.stations[n].gleis.toString()) >= 0){
-                                    var equip1 ={
-                                        "equipID" : dbDaten.facilities[j].equipmentnumber,
-                                        "equipmentTyp" : dbDaten.facilities[j].type,
-                                        "status" : dbDaten.facilities[j].state
-                                    }
-                                    newEquipment.push(equip1);
-                                }
-                            }
-                        }
-                    reqBody.stations[n].equipment = newEquipment;
-                    callback(null);
-                    }
-                });
-            };
-            
-            //Aufruf der async Funktion timesSeries, zum seriellen Abarbeiten der curl-requests
-            async.timesSeries(reqBody.stations.length, sendRequest, function (err, results){                
-                    //Wenn alle Abfragen bearbeitet wurden und eine Response erstellt wurde
-                    console.log("Done!");
-                    //err ist true wenn einer aufgetreten ist
-                    if(err){
-                        res.set("Accepts", "application/json").status(403).end();
-                    }else{
-                        res.set("Content-Type", 'application/json').status(200).json(reqBody).end();
-                    }
-            });
         
-        }else if(response.statusCode == 404){
-            //Not found
-            res.set("Content-Type", 'application/json').status(404).end();
-        }else if(response.statusCode == 400 || err){
-            //Error
-            res.set("Content-Type", 'application/json').status(400).end();
-        }
-    });
-});
+            var ressLocation = URL;
+			
+			console.log("Publish change on FavRoute: " + pubPath);
 
-router.delete('/:id', function(req,res){
-    //Ressource ID
-    var delID = req.params.id;
-    
-    //Path fuer Publish
-    var pubPath = '/favroute/' + delID + '/change';
-    
-    //URL fuer den http-request an unseren Dienstgeber
-    var delURL = dgHost + '/favroute/' + delID;
-    
-    //Request an Dienstgeber starten
-    request.delete(delURL, function(err, response, body){
-        if(response.statusCode == 200){
             var publishing = clientFaye.publish(pubPath, {
-                'Operation' : 'DELETE',
-                'Ressource' : delURL
+                'Operation' : operation,
+                'Ressource' : ressLocation
             });
-            //Erfolgreich entfernt
-            res.set("Content-Type", 'application/json').status(200).end();
-        }else if(response.statusCode == 204){
-            //No content to delete
-            res.set("Content-Type", 'application/json').status(204).end();
-        }else if(response.statusCode == 400 || err){
-            //Error
-            res.set("Content-Type", 'application/json').status(400).end();
         }
     });
 });
-
-module.exports = router;

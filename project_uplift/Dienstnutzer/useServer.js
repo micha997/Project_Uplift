@@ -1,14 +1,10 @@
-var express = require('express'),
-    http = require('http'),
-    request = require('request'),
+var http = require('http'),
 	faye = require('faye');
 
-var app = express();
-var server = http.createServer(app);
+var server = http.createServer();
 
 const settings = {
-	serverPort: 8080,
-	fayePort: 8000
+	Port: 8000
 };
 
 var bayeux = new faye.NodeAdapter({
@@ -17,12 +13,8 @@ var bayeux = new faye.NodeAdapter({
 
 bayeux.attach(server);
 
-app.use('/favroute', require('./routes/favroute'));
+const favroute = require('./routes/favroute');
 
-app.listen(settings.serverPort,function(){
-  console.log("Dienstnutzer verfuegbar unter Port: "+settings.serverPort);
-});
-
-server.listen(settings.fayePort, function(){
-  console.log("Faye Pub/Sub verfuegbar unter Port: "+settings.fayePort);
+server.listen(settings.Port, function(){
+  console.log("Faye Pub/Sub verfuegbar unter Port: "+settings.Port);
 });
