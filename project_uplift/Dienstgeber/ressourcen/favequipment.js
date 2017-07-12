@@ -33,7 +33,10 @@ var postSchema = {
 
 //Middleware
 router.use(function timelog (req, res, next){
+    console.log('-----------------------');
 	console.log('Time: ', Date.now());
+    console.log('Method: ',req.method);
+    console.log('URL: ',ressourceName + req.url);
 	next();
 });
 //Gibt alle favequipment-Listen aus
@@ -105,7 +108,7 @@ router.put('/:id',bodyParser.json(),function(req,res){
                 for(var i = 0;addFavEquip.equipments.length > i;i++){
                     data.favequips[foundID].equipments.push(addFavEquip.equipments[i]);
                 }
-                console.log(data.favequips[foundID]);
+                //console.log(data.favequips[foundID]);
                 res.set("Content-Type", 'application/json').status(200).json(data.favequips[foundID]).end();
             }else{
                 //keine FavEquip-Liste mit der passenden ID gefunden => not found
@@ -131,7 +134,7 @@ router.post('/',bodyParser.json(),function(req,res){
             //Vergabe der ID an neue FavEquips-Liste und pushen auf das Array
             newFavEquip.id = favequipID++;
             data.favequips.push(newFavEquip);
-            console.log(newFavEquip);
+            //console.log(newFavEquip);
             res.set("Content-Type", 'application/json').set("Location", "/favequipment/" + (favequipID - 1)).status(201).json(newFavEquip).end();
         } else {
             res.set("Content-Type", 'application/json').status(400).end();
@@ -151,7 +154,7 @@ router.delete('/:id',function(req,res){
         if(foundID > -1){
             //Index des FavEquips gefunden, wird jetzt geloescht
             var removedFavEquip = data.favequips.splice(foundID, 1);
-            console.log(removedFavEquip);
+            //console.log(removedFavEquip);
             res.set("Content-Type", 'application/json').status(200).end();
         }else{
             res.set("Content-Type", 'application/json').status(204).end();

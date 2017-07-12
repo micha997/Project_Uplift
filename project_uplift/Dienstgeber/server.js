@@ -22,6 +22,10 @@ app.use("/favequipment",favequipment);
 const favroute = require('./ressourcen/favroute');
 app.use("/favroute", favroute);
 
+//modul fuer serviceEntry
+const serviceEntry = require('./ressourcen/serviceEntry');
+app.use("/", serviceEntry);
+
 //Server starten
 app.listen(settings.port, function () {
    console.log("REST-Sever laeuft auf Port " + settings.port);

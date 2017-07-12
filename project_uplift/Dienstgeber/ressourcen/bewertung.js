@@ -23,7 +23,10 @@ var postSchema = {
 
 //Middleware
 router.use(function timelog (req, res, next){
+    console.log('-----------------------');
 	console.log('Time: ', Date.now());
+    console.log('Method: ',req.method);
+    console.log('URL: ',ressourceName + req.url);
 	next();
 });
 
@@ -76,13 +79,13 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
          }else{
              //Suche der EquipmentID
              var foundEquipID = data.bewertung.findIndex(function(x){ return x.equipID === equipID });
-             console.log(foundEquipID);
+             //console.log(foundEquipID);
              if(foundEquipID > -1){
                  //Es wurde eine EquipmentID im Array gefunden und die neue Bewertung wird hinzugefuegt
                  newBewertung.id = data.bewertung[foundEquipID].bewertungID++; //ID vergabe
                  data.bewertung[foundEquipID].gesamtWertung += newBewertung.wertung; //gesamtWertung anpassen
                  data.bewertung[foundEquipID].bewertungen.push(newBewertung);
-                 console.log(data.bewertung);
+                 //console.log(data.bewertung);
                  res.set("Content-Type", 'application/json').set("Location", "/bewertung/" + equipID).set("BewertungID", (data.bewertung[foundEquipID].bewertungID - 1)).status(201).json(newBewertung).end();
              }else{
                  //Es wurde keine EquipmentID gefunden 
@@ -100,7 +103,7 @@ router.post('/:equipID', bodyParser.json(), function(req,res){
                  newEintrag.equipID = equipID;
                  //Eintrag mit erster Bewertung wird dem Haupt-Array(data.bewertung) hinzugefuegt
                  data.bewertung.push(newEintrag);
-                 console.log(data.bewertung);
+                 //console.log(data.bewertung);
                  res.set("Content-Type", 'application/json').set("Location", "/bewertung/" + equipID + "/" + (newEintrag.bewertungID-1)).status(201).json(newEintrag).end();
              }
          }
@@ -130,8 +133,8 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                         //gesamtWertung muss angepasst werden, durch das Entfernen der Bewertung
                         data.bewertung[foundEquipID].gesamtWertung -= data.bewertung[foundEquipID].bewertungen[foundBewertungID].wertung;
                         var removedBewertung = data.bewertung[foundEquipID].bewertungen.splice(foundBewertungID, 1);
-                        console.log(removedBewertung);
-                        console.log(data.bewertung);
+                        //console.log(removedBewertung);
+                        //console.log(data.bewertung);
                         res.set("Content-Type", 'application/json').status(200).end();
                     }else{
                         //Bewertung zum entfernen nicht vorhanden ist
@@ -141,9 +144,9 @@ router.delete('/:equipID', bodyParser.json(), function(req, res){
                 case false:
                     //ID gefunden => Entfernen der Equipment-Bewertungen (Alle)
                     var removedEquipment = data.bewertung.splice(foundEquipID, 1);
-                    console.log(removedEquipment);
-                    console.log(data.bewertung);
-                    res.set("Content-Type", 'application/json').status(204).end();
+                    //console.log(removedEquipment);
+                    //console.log(data.bewertung);
+                    res.set("Content-Type", 'application/json').status(200).end();
                     break;
                                                   }
         }else{

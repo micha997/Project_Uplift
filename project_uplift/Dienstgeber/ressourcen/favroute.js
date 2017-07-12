@@ -48,7 +48,10 @@ var favrouteID = 0;
 
 //Middleware
 router.use(function timelog (req, res, next){
+    console.log('-----------------------');
 	console.log('Time: ', Date.now());
+    console.log('Method: ',req.method);
+    console.log('URL: ',ressourceName + req.url);
 	next();
 });
 
@@ -224,7 +227,7 @@ router.delete('/:id', function(req, res){
         if(routeID > -1){
             //Index der Route gefunden, wird jetzt geloescht
             var removedRoute = data.favroutes.splice(routeID, 1);
-            console.log(removedRoute);
+            //console.log(removedRoute);
             res.set("Content-Type", 'application/json').status(200).end();
         }else{
             res.set("Content-Type", 'application/json').status(204).end();
