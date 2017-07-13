@@ -13,7 +13,7 @@ var dgHost = 'http://localhost:3773';//muss noch auf Heroku geaendert werden
 //Optionen fuer die curl-anfrage an die Deutsche Bahn
 var DBoptions =
     {
-        url : "https://api.deutschebahn.com/fasta/v1/stations/",
+        url : "https://api.deutschebahn.com/fasta/v1/facilities/",
         method : 'GET',
         headers :
         {
@@ -134,7 +134,7 @@ clientFaye.subscribe('/favroute', function(message){
 //Subscribe auf favroute bei PUT und DELETE Ausfuehrungen
 clientFaye.subscribe('/favroute/*').withChannel(function(channel, message){
 	
-	//Die Equipmentnummer wird aus dem Topic extrahiert
+	//Die FavRouteID wird aus dem Topic extrahiert
     var channelArr = channel.match(/\d+/g);
     var channelNum = parseInt(channelArr[0]);
 	

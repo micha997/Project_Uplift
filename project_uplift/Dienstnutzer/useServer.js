@@ -14,6 +14,9 @@ var bayeux = new faye.NodeAdapter({
 bayeux.attach(server);
 
 const favroute = require('./routes/favroute');
+const favequipment = require('./routes/favequipment');
+const bewertung = require('./routes/bewertung');
+
 
 server.listen(settings.Port, function(){
   console.log("Faye Pub/Sub verfuegbar unter Port: "+settings.Port);
