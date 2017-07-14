@@ -22,9 +22,9 @@ var DBoptions =
     };
 
 //Create a client
-var client = new faye.Client('http://localhost:8000/');
+var clientFaye = new faye.Client('http://localhost:8000/');
 
-client.subscribe('/bewertung/*').withChannel(function(channel, message){
+clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
     //Die Equipmentnummer wird aus dem Topic extrahiert
     var channelArr = channel.match(/\d+/g);
     var channelNum = parseInt(channelArr[0]);
@@ -93,7 +93,7 @@ client.subscribe('/bewertung/*').withChannel(function(channel, message){
 	}
 });
 
-client.subscribe('/favequipment/*').withChannel(function(channel, message) {
+clientFaye.subscribe('/favequipment/*').withChannel(function(channel, message) {
     var channelArr = channel.match(/\d+/g);
     var channelNum = parseInt(channelArr[0]);  
     
@@ -132,9 +132,12 @@ client.subscribe('/favequipment/*').withChannel(function(channel, message) {
     });
 });
 
-client.subscribe('/favequipment',function(message){	
+clientFaye.subscribe('/favequipment',function(message){	
     //URL fuer den http-request an den Dienstgeber
     var postURL = dgHost + '/favequipment/';
+    
+    //Path fuer Publish
+    var pubPath = '/favequipment/';
     
     //Optionen fuer das POST-request
     var postOptions = {

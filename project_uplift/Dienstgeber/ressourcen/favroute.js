@@ -206,8 +206,58 @@ router.get('/:id', function(req, res){
         //Index der Favroute, dass man sucht wird im Array gesucht
         var reqFavRoute = data.favroutes.findIndex(function(x){ return x.id === reqID });
         if(reqFavRoute > -1){
-            //Bei Erfolgreiche gefundenem Index wird die FavRoute ausgegeben
-            res.set("Content-Type", 'application/json').status(200).json(data.favroutes[reqFavRoute]).end();
+            
+            //Bei Erfolgreiche gefundenem Index wird die FavRoute ausgewaehlt
+            var sendRoute = data.favroutes[reqFavRoute];
+            
+            //Funktion, die den curl-request versendet
+            function sendRequest(n, callback){
+                console.log('Sende Request: ', n);
+                //URL anpassen
+                var currentOptions = options;
+                currentOptions.url = ("https://api.deutschebahn.com/fasta/v1/stations/" + sendRoute.stations[n].id);
+                console.log("request an: " + currentOptions.url);
+                //curl-request an die Deutsche Bahn api mit den passenden Optionen
+                curl.request(currentOptions, function(err, dbDaten){
+                    var dbDaten = JSON.parse(dbDaten);
+                    if(err != null || typeof dbDaten.stationnumber == 'undefined'){
+                        callback(true);
+                    }else{
+                        //Array mit dem Equipment fuer die Station mit passendem Gleis
+                        //Es ist zwar schon da in der FavRoute, aber das geht schneller es neu zu holen
+                        //Und dazu den aktuellen Status
+                        var equipment = []
+                        //Schleife zum pushen des Equipments auf das equipment Array
+                        for(var j = 0; j < dbDaten.facilities.length; j++) {
+                            //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
+                            if(dbDaten.facilities[j].description != null){
+                                if(dbDaten.facilities[j].description.indexOf(sendRoute.stations[n].gleis.toString()) >= 0){
+                                    var equip1 ={
+                                        "equipID" : dbDaten.facilities[j].equipmentnumber,
+                                        "equipmentTyp" : dbDaten.facilities[j].type,
+                                        "status" : dbDaten.facilities[j].state
+                                    }
+                                    equipment.push(equip1);
+                                }
+                            }
+                        }
+                        sendRoute.stations[n].equipment = equipment;
+                        callback(null);
+                    }
+                });
+            };
+            
+            //Aufruf der async Funktion timesSeries, zum seriellen Abarbeiten der curl-requests
+            async.timesSeries(sendRoute.stations.length, sendRequest, function (err, results){
+                //Wenn alle Abfragen bearbeitet wurden und eine Response erstellt wurde
+                console.log("Done!");
+                //err ist true wenn einer aufgetreten ist
+                if(err){
+                    res.set("Accepts", "application/json").status(403).end();
+                }else{
+                    res.set("Content-Type", 'application/json').status(200).json(sendRoute).end();
+                }
+            });
         }else{
             //Kein Index gefunden => gesuchte FavRoute nicht vorhanden => not found
             res.set("Content-Type", 'application/json').status(404).end();

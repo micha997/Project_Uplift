@@ -129,7 +129,7 @@ router.post('/',bodyParser.json(),function(req,res){
         //Alle Errors der Validation sammeln, standard ist return nach erstem
         var ajv = Ajv({allErrors: true});
         if (ajv.validate(postSchema, newFavEquip)) {
-            console.log(ajv.validate(postSchema, newFavEquip));
+            //console.log(ajv.validate(postSchema, newFavEquip));
             //json Daten stimmen dem schema ueberein
             //Vergabe der ID an neue FavEquips-Liste und pushen auf das Array
             newFavEquip.id = favequipID++;

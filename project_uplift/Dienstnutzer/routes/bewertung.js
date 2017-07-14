@@ -7,15 +7,15 @@ const useName = "bewertung";
 var dgHost = 'http://localhost:3773';//muss noch auf Heroku geaendert werde
 
 //Create a client
-var client = new faye.Client('http://localhost:8000/');
+var clientFaye = new faye.Client('http://localhost:8000/');
 
-client.subscribe('/bewertung/*').withChannel(function(channel, message){
+clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
     //Die Equipmentnummer wird aus dem Topic extrahiert
     var channelArr = channel.match(/\d+/g);
     var channelNum = parseInt(channelArr[0]);
     var bewertungData = message;
     //Optionen fuer den Request an den Dienstgeber werden angepasst
-    var url = (dURL + '/bewertung/'+channelNum);
+    var url = (dgHost + '/bewertung/'+channelNum);
     var options = {
         uri: url,
         method: 'POST',
