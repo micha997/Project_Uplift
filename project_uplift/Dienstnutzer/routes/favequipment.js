@@ -7,7 +7,7 @@ var curl = require('curlrequest');
 const useName = "favequipment";
 
 
-var dgHost = 'http://localhost:3773';//muss noch auf Heroku geaendert werde
+var dgHost = 'https://wba2-mrh-dienstgeber.herokuapp.com' || 'http://localhost:3773';
 
 //Optionen fuer die curl-anfrage an die Deutsche Bahn
 var DBoptions =

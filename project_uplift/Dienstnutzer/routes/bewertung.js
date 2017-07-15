@@ -4,7 +4,7 @@ var request = require('request');
 
 const useName = "bewertung";
 
-var dgHost = 'http://localhost:3773';//muss noch auf Heroku geaendert werde
+var dgHost = 'https://wba2-mrh-dienstgeber.herokuapp.com' || 'http://localhost:3773';
 
 //Create a client
 var clientFaye = new faye.Client('http://localhost:8000/');

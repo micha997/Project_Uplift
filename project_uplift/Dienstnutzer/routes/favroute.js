@@ -8,7 +8,7 @@ const useName = "favroute";
 
 var clientFaye = new faye.Client("http://localhost:8000");
 
-var dgHost = 'http://localhost:3773';//muss noch auf Heroku geaendert werden
+var dgHost = 'https://wba2-mrh-dienstgeber.herokuapp.com' || 'http://localhost:3773';
 
 //Optionen fuer die curl-anfrage an die Deutsche Bahn
 var DBoptions =
