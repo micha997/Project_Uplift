@@ -7,4 +7,4 @@ var bewertung1 = {
 	'comment' : 'Mist'
 }
 
-client.publish('/bewertung/10409032', bewertung1 );
+client.publish('/bewertung/10099507', bewertung1 );

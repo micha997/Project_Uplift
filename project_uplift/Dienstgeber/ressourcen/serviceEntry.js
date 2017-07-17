@@ -19,9 +19,9 @@ router.use(function timelog (req, res, next){
 router.all('/', function(req,res){
     var service =
         {
-            "FavRoute" : dgHost + '/favroute',
-            "FavEquipment" : dgHost + '/favequipment',
-            "Bewertung" : dgHost + '/bewertung'
+            "FavRoute" : '/favroute',
+            "FavEquipment" : '/favequipment',
+            "Bewertung" : '/bewertung'
         }
     
     res.status(200).json(service).end();
