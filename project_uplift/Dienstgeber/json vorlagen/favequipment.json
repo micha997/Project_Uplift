@@ -13,13 +13,16 @@
    {
       "equipments":[
          {
-            "equipID":10035445
+            "equipID":10035445,
+            "equipBewertung":"../bewertung/10035445"
          },
          {
-            "equipID":10293001
+            "equipID":10293001,
+            "equipBewertung":"../bewertung/10293001"
          },
          {
-            "equipID":10409032
+            "equipID":10409032,
+            "equipBewertung":"../bewertung/10409032"
          }
       ],
       "id":0

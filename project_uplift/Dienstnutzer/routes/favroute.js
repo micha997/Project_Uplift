@@ -53,7 +53,7 @@ clientFaye.subscribe('/bewertung/*').withChannel(function(channel, message){
 						for(var i = 0;i<resBody.length;i++){
 							for(var j = 0;j<resBody[i].stations.length;j++){
 								for(var k = 0;k<resBody[i].stations[j].equipment.length;k++){
-									if(resBody[i].stations[j].equipment[k] == channelNum){
+									if(resBody[i].stations[j].equipment[k].equipID == channelNum){
 										//Es wurde eine FavRoute mit diesem Equipment gefunden
 										//ID der FavRoute wird ins Array hinzugefuegt
 										publishTo.push(resBody[i].id);

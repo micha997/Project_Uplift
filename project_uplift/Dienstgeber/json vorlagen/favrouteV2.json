@@ -28,8 +28,14 @@
             "gleis":2,
             "name":"Köln-Ehrenfeld",
             "equipment":[
-               10292990,
-               10293001
+                {
+                    "equipID":10292990,
+                    "equipBewertung":"../bewertung/10292990"
+                },
+                {
+                    "equipID":10293001,
+                    "equipBewertung":"../bewertung/10293001"
+                }
             ]
          },
          {
@@ -37,11 +43,26 @@
             "gleis":10,
             "name":"Köln Hbf",
             "equipment":[
-               10409032,
-               10035445,
-               10035446,
-               10035579,
-               10099507
+                {
+                    "equipID":10409032,
+                    "equipBewertung":"../bewertung/10409032"
+                },
+                {
+                    "equipID":10035445,
+                    "equipBewertung":"../bewertung/10035445"
+                },
+                {
+                    "equipID":10035446,
+                    "equipBewertung":"../bewertung/10035446"
+                },
+                {
+                    "equipID":10035579,
+                    "equipBewertung":"../bewertung/10035579"
+                },
+                {
+                    "equipID":10099507,
+                    "equipBewertung":"../bewertung/10099507"
+                }
             ]
          },
          {

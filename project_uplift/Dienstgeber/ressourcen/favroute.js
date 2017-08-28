@@ -95,7 +95,10 @@ router.post('/', bodyParser.json(), function(req,res){
                             //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
                             if(dbDaten.facilities[j].description != null){
                                 if(dbDaten.facilities[j].description.indexOf(newFavRoute.stations[n].gleis.toString()) >= 0){
-                                    equipment.push(dbDaten.facilities[j].equipmentnumber);
+                                    equipment.push({
+                                        "equipID":dbDaten.facilities[j].equipmentnumber,
+                                        "equipBewertung":"../bewertung/"+dbDaten.facilities[j].equipmentnumber
+                                    });
                                 }
                             }
                         }
@@ -166,7 +169,10 @@ router.put('/:id', bodyParser.json(), function(req, res){
                                 //Pruefen ob Equipment auf dem jeweiligen Gleis vorhanden ist
                                 if(dbDaten.facilities[j].description != null){
                                 if(dbDaten.facilities[j].description.indexOf(changeFavRoute.stations[n].gleis.toString()) >= 0){
-                                    equipment.push(dbDaten.facilities[j].equipmentnumber);
+                                    equipment.push({
+                                        "equipID":dbDaten.facilities[j].equipmentnumber,
+                                        "equipBewertung":"../bewertung/"+dbDaten.facilities[j].equipmentnumber
+                                    });
                                 }
                             }
                             }

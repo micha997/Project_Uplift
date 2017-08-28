@@ -106,6 +106,7 @@ router.put('/:id',bodyParser.json(),function(req,res){
             if(foundID > -1){
                 //Index der FavEquip-Liste gefunden, jetzt wird sie geaendert
                 for(var i = 0;addFavEquip.equipments.length > i;i++){
+                    addFavEquip.equipments[i].equipBewertung = "../bewertung/"+addFavEquip.equipments[i].equipID;
                     data.favequips[foundID].equipments.push(addFavEquip.equipments[i]);
                 }
                 //console.log(data.favequips[foundID]);
@@ -133,6 +134,9 @@ router.post('/',bodyParser.json(),function(req,res){
             //json Daten stimmen dem schema ueberein
             //Vergabe der ID an neue FavEquips-Liste und pushen auf das Array
             newFavEquip.id = favequipID++;
+            for(i=0;i<newFavEquip.equipments.length;i++){
+                newFavEquip.equipments[i].equipBewertung = "../bewertung/"+newFavEquip.equipments[i].equipID;
+            }
             data.favequips.push(newFavEquip);
             //console.log(newFavEquip);
             res.set("Content-Type", 'application/json').set("Location", "/favequipment/" + (favequipID - 1)).status(201).json(newFavEquip).end();
